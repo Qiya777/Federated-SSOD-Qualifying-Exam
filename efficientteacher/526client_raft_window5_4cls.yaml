@@ -1,0 +1,109 @@
+project: 'yolov5_ssod'
+# role: 'client'
+
+adam: False
+epochs: 20
+weights: ''          # 联邦时必须由主脚本改成 server 下发的权重
+prune_finetune: False
+linear_lr: True
+find_unused_parameters: True
+
+hyp:
+  # lr0: 0.01
+  lr0: 0.001
+  hsv_h: 0.015
+  hsv_s: 0.7
+  hsv_v: 0.4
+  lrf: 1.0
+  scale: 0.9
+  burn_epochs: 0
+  no_aug_epochs: 0
+  warmup_epochs: 3
+
+Model:
+  depth_multiple: 1.00
+  width_multiple: 1.00
+  Backbone:
+    name: 'YoloV5'
+    activation: 'SiLU'
+  Neck:
+    name: 'YoloV5'
+    in_channels: [256, 512, 1024]
+    out_channels: [256, 512, 1024]
+    activation: 'SiLU'
+  Head:
+    name: 'YoloV5'
+    activation: 'SiLU'
+  anchors: [[10,13, 16,30, 33,23], [30,61, 62,45, 59,119], [116,90, 156,198, 373,326]]
+
+Loss:
+  type: 'ComputeLoss'
+  cls: 0.3
+  obj: 0.7
+  anchor_t: 4.0
+
+Dataset:
+  data_name: 'bdd100k'
+  train: ''
+  val: /home/jovyan/Datasets/BDD100K/fed_bdd_20client/val.txt
+  target: /home/jovyan/Datasets/ds_video/ds_1
+  nc: 4
+  names: ['person', 'car', 'truck', 'bus']
+  img_size: 640
+  batch_size: 96
+  workers: 4
+  np: 0
+  val_kp: False
+
+SSOD:
+  train_domain: False
+  pseudo_label_type: 'FairPseudoLabel'
+
+  nms_conf_thres: 0.1
+  nms_iou_thres: 0.65
+
+  teacher_loss_weight: 1.0
+  cls_loss_weight: 0.3
+  box_loss_weight: 0.05
+  obj_loss_weight: 0.7
+
+  loss_type: 'ComputeStudentMatchLoss'
+  ignore_thres_low: 0.1
+  ignore_thres_high: 0.6
+
+  uncertain_aug: True
+  use_ota: False
+  multi_label: False
+  ignore_obj: False
+
+  pseudo_label_with_obj: False
+  pseudo_label_with_bbox: True
+  pseudo_label_with_cls: True
+
+  with_da_loss: False
+  da_loss_weights: 0.01
+
+  epoch_adaptor: False
+  resample_high_percent: 0.25
+  resample_low_percent: 0.99
+
+  ema_rate: 0.999
+  cosine_ema: True
+  imitate_teacher: False
+
+  multi_step_lr: False
+  milestones: [10, 15]
+
+  dynamic_thres_epoch: 0
+
+  extra_teachers: []
+  extra_teachers_class_names: []
+
+  ssod_hyp:
+    with_gt: False
+    mosaic: 0.0
+    cutout: 0.0
+    autoaugment: 0.0
+    scale: 0.8
+    degrees: 0.0
+    shear: 0.0
